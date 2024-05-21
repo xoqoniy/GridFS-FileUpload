@@ -1,4 +1,5 @@
 using FilesApi.DataAccessLayer;
+using FilesApi.Services;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
@@ -22,7 +23,14 @@ builder.Services.AddSingleton<IMongoClient, MongoClient>(sp =>
     return new MongoClient(settings.ConnectionString);
 });
 
-builder.Services.AddScoped<IRepository, Repository>();
+// Register repository
+builder.Services.AddScoped<IRepository, Repository>(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<MongoDbSettings>>();
+    return new Repository(options, options.Value.CollectionName);
+});
+// Register file service
+builder.Services.AddScoped<IFileService, FileService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

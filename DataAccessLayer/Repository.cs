@@ -1,22 +1,48 @@
-﻿
+﻿using Microsoft.Extensions.Options;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using MongoDB.Driver.Core.Configuration;
+using MongoDB.Driver.GridFS;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+
 namespace FilesApi.DataAccessLayer
 {
     public class Repository : IRepository
     {
-            
-        public Task DeleteFileAsync(string id)
+        private readonly IGridFSBucket _gridFSBucket;
+
+        
+        public Repository(IOptions<MongoDbSettings> mongodbSetting, string bucketName)
         {
-            throw new NotImplementedException();
+            MongoClient client = new(mongodbSetting.Value.ConnectionString);
+            var database = client.GetDatabase(mongodbSetting.Value.DatabaseName);
+            _gridFSBucket = new GridFSBucket(database, new GridFSBucketOptions
+            {
+                BucketName = bucketName
+            });
         }
 
-        public Task<Stream> DownloadFileAsync(string id)
+        public async Task<string> UploadFileAsync(Stream fileStream, string fileName)
         {
-            throw new NotImplementedException();
+            var fileId = await _gridFSBucket.UploadFromStreamAsync(fileName, fileStream);
+            return fileId.ToString();
         }
 
-        public Task<string> UploadFileAsync(Stream fileStream, string fileName)
+        public async Task<Stream> DownloadFileAsync(string id)
         {
-            throw new NotImplementedException();
+            var stream = new MemoryStream();
+            var objectId = new ObjectId(id);
+            await _gridFSBucket.DownloadToStreamAsync(objectId, stream);
+            stream.Seek(0, SeekOrigin.Begin);
+            return stream;
+        }
+
+        public async Task DeleteFileAsync(string id)
+        {
+            var objectId = new ObjectId(id);
+            await _gridFSBucket.DeleteAsync(objectId);
         }
     }
 }
