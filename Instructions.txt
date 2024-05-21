@@ -1,0 +1,8 @@
+﻿
+
+Instructions for using GridFs in MongoDb
+
+Download packages
+MongoDb.Driver
+MongoDb.Driver.GridFs
+
