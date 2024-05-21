@@ -31,6 +31,14 @@ builder.Services.AddScoped<IRepository, Repository>(sp =>
 });
 // Register file service
 builder.Services.AddScoped<IFileService, FileService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Cors", builder =>
+    {
+        builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+    });
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
