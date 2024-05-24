@@ -29,8 +29,8 @@ namespace FilesApi.Controllers
             try
             {
                 using var stream = file.OpenReadStream();
-                var fileId = await _fileService.UploadFileAsync(stream, file.FileName);
-                return Ok(new { FileId = fileId, FileName = file.FileName });
+                var uploadedFile = await _fileService.UploadFileAsync(stream, file.FileName, file.ContentType);
+                return Ok(new { FileId = uploadedFile.FileId, FileName = uploadedFile.Name });
             }
             catch (Exception ex)
             {
@@ -49,15 +49,13 @@ namespace FilesApi.Controllers
 
             try
             {
-                var stream = await _fileService.DownloadFileAsync(id);
-                if (stream == null)
+                var file = await _fileService.DownloadFileAsync(id);
+                if (file == null || file.Content == null)
                 {
                     return NotFound("File not found.");
                 }
 
-                // Assuming you want to return the file with its original name
-                var contentType = "application/octet-stream"; // Adjust according to your needs
-                return File(stream, contentType);
+                return File(file.Content, file.ContentType, file.Name);
             }
             catch (Exception ex)
             {
