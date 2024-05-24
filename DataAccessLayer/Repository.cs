@@ -52,7 +52,7 @@ namespace FilesApi.DataAccessLayer
             var fileInfo = await _gridFSBucket.Find(new BsonDocument("_id", objectId)).FirstOrDefaultAsync();
             if (fileInfo == null)
             {
-                return null; // or throw an exception
+                throw new Exception(); // or throw an exception
             }
 
             var stream = new MemoryStream();
