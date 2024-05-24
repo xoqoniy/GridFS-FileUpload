@@ -1,4 +1,5 @@
 ﻿using FilesApi.DataAccessLayer;
+using FilesApi.Models;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace FilesApi.Services
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
-        public async Task<string> UploadFileAsync(Stream fileStream, string fileName)
+        public async Task<FileEntity> UploadFileAsync(Stream fileStream, string fileName, string contentType)
         {
             if (fileStream == null)
                 throw new ArgumentNullException(nameof(fileStream), "File stream cannot be null.");
@@ -22,9 +23,12 @@ namespace FilesApi.Services
             if (string.IsNullOrWhiteSpace(fileName))
                 throw new ArgumentException("File name cannot be null or empty.", nameof(fileName));
 
+            if (string.IsNullOrWhiteSpace(contentType))
+                throw new ArgumentException("Content type cannot be null or empty.", nameof(contentType));
+
             try
             {
-                return await _repository.UploadFileAsync(fileStream, fileName);
+                return await _repository.UploadFileAsync(fileStream, fileName, contentType);
             }
             catch (Exception ex)
             {
@@ -33,7 +37,7 @@ namespace FilesApi.Services
             }
         }
 
-        public async Task<Stream> DownloadFileAsync(string id)
+        public async Task<FileEntity> DownloadFileAsync(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
                 throw new ArgumentException("File ID cannot be null or empty.", nameof(id));
